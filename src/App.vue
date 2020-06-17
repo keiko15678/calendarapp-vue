@@ -1,15 +1,12 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/calendar">Home</router-link>|
-      <router-link to="/main/week">week</router-link>|
-      <router-link to="/main/day">day</router-link>
-    </div>
     <router-view/>
   </div>
 </template>
 <script>
+// import countDaysInMonth from '@/mixins/countDaysInMonth'
 export default {
+  // mixins: [countDaysInMonth],
   methods: {
     // find which day of week does the month start at
     zellerCongruence(year, month, day) {
@@ -29,9 +26,14 @@ export default {
       else w = w % 7
       return w
     },
-    // total days in the month
     countDaysInMonth(year, month) {
-      return /3|5|8|10/.test(month - 1) ? 30 : month - 1 === 1 ? ((!(year % 4) && year % 100) || !(year % 400) ? 29 : 28) : 31
+      return /3|5|8|10/.test(month - 1)
+        ? 30
+        : month - 1 === 1
+          ? (!(year % 4) && year % 100) || !(year % 400)
+            ? 29
+            : 28
+          : 31
     },
     // make dates from years 1900-2100
     produceDates() {
@@ -73,6 +75,7 @@ export default {
     }
   },
   mounted() {
+    // only run dates on first launch
     const dates = localStorage.getItem('dates') ? JSON.parse(localStorage.getItem('dates')) : this.produceDates()
     this.$store.commit('setDates', dates)
   }

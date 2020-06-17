@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid bg-light" style="padding-top: 115px; padding-bottom: 60px;">
+  <div class="container-fluid bg-light" style="padding-top: 150px; padding-bottom: 60px;">
     <div class="row" v-for="time of timeline" :key="time">
       <div
         class="col-3 border border-right-0 border-top-0 text-center pt-5 pb-n1"

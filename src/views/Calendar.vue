@@ -1,36 +1,36 @@
 <template>
   <div>
-    <div class="container-fluid shadow-md">
+    <div class="container-fluid shadow-md position-fixed bg-white" style="z-index: 1000;">
       <div class="row">
         <div class="col-24">
-          <div class="d-flex align-items-center" style="font-size: 16px;">
+          <div class="d-flex align-items-center">
             <button
               class="bg-secondary text-primary rounded-circle btn"
-              style="font-size: 16px; transform:translateY(5px);"
+              style="font-size:16px; transform:translateY(5px);"
             >
               <fa :icon="['far', 'calendar']"></fa>
             </button>
-            <h5>選擇日期</h5>
-            <a href="javascript:;" class="ml-auto">&times;</a>
+            <h1 class="ml-2 mt-3 h5">選擇日期</h1>
+            <a
+              href="javascript:;"
+              class="ml-auto mt-3 h3 text-decoration-none text-dark"
+              @click="$router.push({ name: 'week'})"
+            >&times;</a>
           </div>
         </div>
       </div>
       <div class="row">
-        <div class="col-24 col-sm-12 col-lg-8">
+        <div class="col-24 mt-3">
           <Month :year="getNowYear" :month="getNowMonth"/>
-          <div class="calender__btnblock pb-2 clearfix">
+          <div class="calender__btnblock pb-2 clearfix pt-1">
             <span v-for="day in weeks" :key="day.id" class="calender__btn">{{ day.n }}</span>
           </div>
         </div>
       </div>
     </div>
-    <div class="container-fluid bg-light">
-      <div class="row">
-        <div
-          class="col-24 col-sm-12 col-lg-8"
-          v-for="(date, index) in dates"
-          :key="date.month.toString()+date.year"
-        >
+    <div class="container-fluid bg-light" style="padding-top: 140px;">
+      <div class="row" id="datesArea">
+        <div class="col-24" v-for="(date, index) in dates" :key="date.month.toString()+date.year">
           <Month
             :year="date.year"
             :month="date.month"
@@ -86,6 +86,20 @@ export default {
       this.currentCalender = `${year}-${month}-${day}`
       this.$router.push({ name: 'week' })
     }
+  },
+  watch: {
+
+  },
+  mounted() {
+    this.$nextTick(() => {
+      const target = document.querySelector('#datesArea')
+      console.log(target)
+      // const rangeToBottom = target.scrollHeight - target.scrollTop - target.clientHeight
+      // console.log(rangeToBottom)
+      // console.log(window.innerHeight)
+      console.log(target.scrollHeight, target.clientHeight, target.scrollTop)
+      // setInterval(() => { console.log(target.scrollHeight) }, 3000)
+    })
   }
 }
 </script>

@@ -6,14 +6,30 @@
     >
       <div class="row">
         <div class="col-24">
-          <div class="d-flex align-items-center pt-2">
-            <h5>預約行事曆</h5>
+          <div class="d-flex align-items-center mt-3">
+            <h5 v-show="$route.path.includes('week')">預約行事曆</h5>
+            <div
+              v-show="$route.path.includes('day')"
+              class="align-items-center mr-2"
+              :class="{ 'd-flex': $route.path.includes('day')}"
+            >
+              <a href="javascript:;" class="text-dark btn" @click="adjustDay(-1)">
+                <fa icon="arrow-alt-circle-left"></fa>
+              </a>
+              <span>{{ getNowYear + ' / ' + getNowMonth + ' / ' + getNowDay}}</span>
+              <a href="javascript:;" class="text-dark btn" @click="adjustDay(1)">
+                <fa icon="arrow-alt-circle-right"></fa>
+              </a>
+            </div>
             <a
               href="javascript:;"
               class="ml-auto btn btn-secondary text-primary rounded-pill"
               @click="$router.push({ name: $route.path.includes('week') ? 'day' : 'week' })"
-            >{{ $route.path.includes('week') ?'週檢視' : '日檢視' }}</a>
-            <a href="javascript:;" class="ml-2 btn btn-secondary text-primary rounded-pill">使用者</a>
+            >
+              {{ $route.path.includes('week') ?'週檢視' : '日檢視' }}
+              <fa icon="caret-down"></fa>
+            </a>
+            <a href="javascript:;" class="ml-2 btn btn-secondary text-primary rounded-pill">K</a>
           </div>
         </div>
       </div>
@@ -28,22 +44,16 @@
           </button>
         </div>
         <button
-          class="col-3 btn"
+          class="col-3 d-flex flex-column align-items-center btn"
           v-for="(day,index) of getNowWeek"
           :key="day.day"
           :class="{ 'bg-primary rounded': isToday(day) && $route.path.includes('day')}"
           @click="selectDay(day)"
         >
-          <a href="javascript:;" class="d-flex flex-column align-items-center text-dark btn">
-            <span
-              class="d-block text-center"
-              :class="{'text-light': isToday(day) && $route.path.includes('day')}"
-            >{{ weeks[index].n}}</span>
-            <span
-              class="d-block text-center"
-              :class="{'text-light': isToday(day) && $route.path.includes('day')}"
-            >{{ day.day }}</span>
-          </a>
+          <span
+            :class="{'text-light': isToday(day) && $route.path.includes('day')}"
+          >{{ weeks[index].n}}</span>
+          <span :class="{'text-light': isToday(day) && $route.path.includes('day')}">{{ day.day }}</span>
         </button>
       </div>
     </div>
@@ -155,11 +165,12 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex'
 import weeksData from '@/mixins/weeksData'
-
+import checkDateIsToday from '@/mixins/checkDateIsToday'
+// import countDaysInMonth from '@/mixins/countDaysInMonth'
 export default {
-  mixins: [weeksData],
+  mixins: [weeksData, checkDateIsToday],
   computed: {
-    ...mapGetters(['getNowWeek', 'getNowMonth', 'getNowYear', 'getNowDay'])
+    ...mapGetters(['getNowWeek'])
   },
   data() {
     return {
@@ -229,14 +240,38 @@ export default {
       this.form = { content: '', startTime: '', endTime: '', date: '' }
       this.filterEventsToCurrentWeek()
     },
-    isToday(date) {
-      const { day, month, year } = date
-      return day === this.getNowDay && month === this.getNowMonth && year === this.getNowYear
-    },
     selectDay(date) {
       // if (this.$route.path.includes('week')) return false
       const { day, month, year } = date
       this.setNowDate(`${year}-${month}-${day}`)
+    },
+    adjustDay(val) {
+      if ((this.getNowDay === this.countDaysInMonth(this.getNowYear, this.getNowMonth) && val === 1) || (this.getNowDay === 1 && val === -1)) {
+        if (val === 1) {
+          if (this.getNowMonth === 12 && this.getNowDay === 31) {
+            this.setNowDate(`${this.getNowYear + 1}-${1}-${1}`)
+          } else {
+            this.setNowDate(`${this.getNowYear}-${this.getNowMonth + 1}-${1}`)
+          }
+        } else {
+          if (this.getNowMonth === 1 && this.getNowDay === 1) {
+            this.setNowDate(`${this.getNowYear - 1}-${12}-${31}`)
+          } else {
+            this.setNowDate(`${this.getNowYear}-${this.getNowMonth - 1}-${this.countDaysInMonth(this.getNowYear, this.getNowMonth - 1)}`)
+          }
+        }
+      } else {
+        this.setNowDate(`${this.getNowYear}-${this.getNowMonth}-${this.getNowDay + val}`)
+      }
+    },
+    countDaysInMonth(year, month) {
+      return /3|5|8|10/.test(month - 1)
+        ? 30
+        : month - 1 === 1
+          ? (!(year % 4) && year % 100) || !(year % 400)
+            ? 29
+            : 28
+          : 31
     }
   },
   created() {

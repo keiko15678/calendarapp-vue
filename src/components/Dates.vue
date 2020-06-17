@@ -2,6 +2,7 @@
   <div class="calender__btnblock clearfix">
     <a
       class="calender__btn py-2"
+      :class="{ 'bg-primary text-white rounded-pill': isToday(date)}"
       :style="{ color: currentMonth !== date.month ? '#eee' : '#aaa'}"
       href="javascript:;"
       v-for="date in dates"
@@ -12,7 +13,9 @@
 </template>
 
 <script>
+import checkDateIsToday from '@/mixins/checkDateIsToday'
 export default {
+  mixins: [checkDateIsToday],
   props: {
     dates: {
       type: Array,
