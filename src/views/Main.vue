@@ -243,6 +243,10 @@ export default {
     this.makeTimeline()
     // localStorage.setItem('events', JSON.stringify([{ date: new Date(), startTime: '08:00', endTime: '12:00', content: 'hello world' }]))
     this.filterEventsToCurrentWeek()
+  },
+  beforeDestroy() {
+    // force calender to render current month at top
+    this.setNowDate(new Date())
   }
 }
 </script>
