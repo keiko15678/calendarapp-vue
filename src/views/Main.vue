@@ -1,8 +1,8 @@
 <template>
   <div>
     <div
-      class="container-fluid shadow-sm bg-white position-fixed"
-      style="top:0; left:0; z-index:1000;"
+      class="container-xl shadow-sm bg-white position-fixed"
+      style="top:0; left:50%; transform:translateX(-50%); z-index:1000;"
     >
       <div class="row">
         <div class="col-24">
@@ -62,7 +62,10 @@
       :week="filterEventsToCurrentWeek()"
       :events="filterEventsToCurrentDay()"
     ></router-view>
-    <div class="container-fluid position-fixed bg-white shadow-sm" style="bottom:0; left:0;">
+    <div
+      class="container-xl position-fixed bg-white shadow-sm"
+      style="bottom:0; left:50%; transform:translateX(-50%);"
+    >
       <div class="row">
         <div class="col-24 text-center py-3">
           <button

@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div class="container-fluid shadow-md position-fixed bg-white" style="z-index: 1000;">
+    <div
+      class="container-xl shadow-md bg-white position-fixed"
+      style="z-index: 1000; left:50%; transform:translateX(-50%);"
+    >
       <div class="row">
         <div class="col-24">
           <div class="d-flex align-items-center">
@@ -28,7 +31,7 @@
         </div>
       </div>
     </div>
-    <div class="container-fluid bg-light" style="padding-top: 140px;">
+    <div class="container bg-light" style="padding-top: 140px;">
       <div class="row" id="datesArea">
         <div class="col-24" v-for="(date, index) in dates" :key="date.month.toString()+date.year">
           <Month :year="date.year" :month="date.month" v-if="index > currentDateIndex"/>
