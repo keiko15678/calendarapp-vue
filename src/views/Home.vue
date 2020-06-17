@@ -1,7 +1,5 @@
 <template>
-  <div class="home">
-    <router-view></router-view>
-  </div>
+  <div class="home">123</div>
 </template>
 
 <script>

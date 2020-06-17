@@ -166,9 +166,10 @@
 import { mapGetters, mapMutations } from 'vuex'
 import weeksData from '@/mixins/weeksData'
 import checkDateIsToday from '@/mixins/checkDateIsToday'
+import reformatTime from '@/mixins/reformatTime'
 // import countDaysInMonth from '@/mixins/countDaysInMonth'
 export default {
-  mixins: [weeksData, checkDateIsToday],
+  mixins: [weeksData, checkDateIsToday, reformatTime],
   computed: {
     ...mapGetters(['getNowWeek'])
   },
@@ -225,16 +226,24 @@ export default {
     },
     handleFormSubmit() {
       if (this.form.content === '' || this.form.startTime === '' || this.form.endTime === '' || this.form.date === '') {
-        this.alerts.push('請填入所有欄位')
+        if (this.alerts.indexOf('請填入所有欄位') === -1) this.alerts.push('請填入所有欄位')
         return false
       }
-      const startTime = +this.form.startTime.substr(0, this.form.startTime.indexOf('a') > -1 ? this.form.startTime.indexOf('a') : this.form.startTime.indexOf('p')).split(':').join('')
-      const endTime = +this.form.endTime.substr(0, this.form.endTime.indexOf('a') > -1 ? this.form.endTime.indexOf('a') : this.form.endTime.indexOf('p')).split(':').join('')
+      // const startTime = +this.form.startTime.substr(0, this.form.startTime.indexOf('a') > -1 ? this.form.startTime.indexOf('a') : this.form.startTime.indexOf('p')).split(':').join('')
+      // const endTime = +this.form.endTime.substr(0, this.form.endTime.indexOf('a') > -1 ? this.form.endTime.indexOf('a') : this.form.endTime.indexOf('p')).split(':').join('')
+      const startTime = this.reformatTime(this.form.startTime)
+      const endTime = this.reformatTime(this.form.endTime)
       if (startTime > endTime) {
-        this.alerts.push('開始時間不得晚於結束時間')
+        if (this.alerts.indexOf('開始時間不得晚於結束時間') === -1) this.alerts.push('開始時間不得晚於結束時間')
         return false
       }
       const events = this.getEventsFromLs() || []
+      // check if block is already booked
+      if (events.length) {
+        if (events.find(event => this.reformatTime(event.startTime) <= startTime || this.reformatTime(event.endTime) >= endTime || this.reformatTime(event.endTime) > startTime)) {
+          if (this.alerts.indexOf('這個時段已經有預約') === -1) this.alerts.push('這個時段已經有預約')
+        }
+      }
       events.push(this.form)
       localStorage.setItem('events', JSON.stringify(events))
       this.form = { content: '', startTime: '', endTime: '', date: '' }

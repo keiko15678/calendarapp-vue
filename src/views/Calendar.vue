@@ -31,14 +31,10 @@
     <div class="container-fluid bg-light" style="padding-top: 140px;">
       <div class="row" id="datesArea">
         <div class="col-24" v-for="(date, index) in dates" :key="date.month.toString()+date.year">
-          <Month
-            :year="date.year"
-            :month="date.month"
-            v-if="index > currentDateIndex && index < (currentDateIndex + 7)"
-          />
+          <Month :year="date.year" :month="date.month" v-if="index > currentDateIndex"/>
           <Dates
             :dates="date.days"
-            v-if="index >= currentDateIndex && index < (currentDateIndex + 7)"
+            v-if="index >= currentDateIndex"
             @handleDateSelect="handleDateSelect"
           />
         </div>
@@ -86,20 +82,6 @@ export default {
       this.currentCalender = `${year}-${month}-${day}`
       this.$router.push({ name: 'week' })
     }
-  },
-  watch: {
-
-  },
-  mounted() {
-    this.$nextTick(() => {
-      const target = document.querySelector('#datesArea')
-      console.log(target)
-      // const rangeToBottom = target.scrollHeight - target.scrollTop - target.clientHeight
-      // console.log(rangeToBottom)
-      // console.log(window.innerHeight)
-      console.log(target.scrollHeight, target.clientHeight, target.scrollTop)
-      // setInterval(() => { console.log(target.scrollHeight) }, 3000)
-    })
   }
 }
 </script>
