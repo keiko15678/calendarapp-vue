@@ -37,12 +37,16 @@ app.use(function(req, res, next) {
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept'
   )
-  res.header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   next()
 })
 
 app.use('/users', usersRouter)
 app.use('/events', eventsRouter)
+
+app.use('/', function(req, res, next) {
+  res.send('Server Running')
+})
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
