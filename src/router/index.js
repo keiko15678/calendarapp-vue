@@ -63,7 +63,6 @@ router.beforeEach((to, from, next) => {
         refreshToken
       })
       .then(res => {
-        console.log('login success')
         // login success
         const { accessToken, displayName, userId } = res.data
         store.dispatch('updateLoginStatus', {

@@ -14,7 +14,7 @@ router.get('/', function(req, res, next) {
       querystring.stringify({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: env.F2E_URL,
+        redirect_uri: env.REDIRECT_URL,
         client_id: '1654358305',
         client_secret: 'ed4b0eae144af0b29c0040eef5dace48'
       }),
@@ -27,7 +27,10 @@ router.get('/', function(req, res, next) {
       const { access_token, refresh_token } = response.data
       res.status(200).send({ access_token, refresh_token })
     })
-    .catch(() => res.sendStatus(500))
+    .catch(err => {
+      console.log(err)
+      res.sendStatus(500)
+    })
 })
 
 // verify access token (login)

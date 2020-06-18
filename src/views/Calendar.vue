@@ -31,7 +31,7 @@
         </div>
       </div>
     </div>
-    <div class="container bg-light" style="padding-top: 140px;">
+    <div class="container-xl bg-light" style="padding-top: 140px;">
       <div class="row" id="datesArea">
         <div class="col-24" v-for="(date, index) in dates" :key="date.month.toString()+date.year">
           <Month :year="date.year" :month="date.month" v-if="index > currentDateIndex"/>
