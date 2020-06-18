@@ -2,7 +2,14 @@
   <form class="form-signin d-flex flex-column align-items-center justify-content-center">
     <img class="mb-4" src="../assets/logo.png" alt width="72" height="72">
     <h1 class="h2 mb-3 font-weight-bold text-center">預約行事曆 APP</h1>
-    <button class="btn btn-lg btn-primary btn-block" type="submit" @click="handleLogin">LINE Login</button>
+    <img
+      class="btn btn-lg btn-block"
+      :src="btnSrc"
+      @mouseover="handleBgChange(1)"
+      @mouseleave="handleBgChange(-1)"
+      @mousedown="handleBgChange(0)"
+      @click="handleLogin"
+    >
   </form>
 </template>
 
@@ -15,8 +22,20 @@ export default {
   computed: {
     ...mapState(['isLoggedIn'])
   },
+  data() {
+    return {
+      btnSrc: require('@/assets/btn_login_base.png')
+    }
+  },
   methods: {
     ...mapActions(['updateLoginStatus']),
+    handleBgChange(val) {
+      this.btnSrc = val === 1
+        ? require('@/assets/btn_login_hover.png')
+        : val === -1
+          ? require('@/assets/btn_login_base.png')
+          : require('@/assets/btn_login_press.png')
+    },
     handleLogin() {
       location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=1654358305&scope=profile&state=123&redirect_uri=${process.env.VUE_APP_LOCAL_URL}`
     },
