@@ -29,7 +29,21 @@
               {{ $route.path.includes('week') ?'週檢視' : '日檢視' }}
               <fa icon="caret-down"></fa>
             </a>
-            <a href="javascript:;" class="ml-2 btn btn-secondary text-primary rounded-pill">K</a>
+
+            <div class="dropdown">
+              <a
+                class="ml-2 btn btn-secondary text-primary rounded-pill"
+                href="javascript:;"
+                role="button"
+                id="dropdownMenuLink"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >{{ displayName[0] }}</a>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="#" @click="handleLogout">登出</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -166,15 +180,16 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions, mapState } from 'vuex'
 import weeksData from '@/mixins/weeksData'
 import checkDateIsToday from '@/mixins/checkDateIsToday'
 import reformatTime from '@/mixins/reformatTime'
-// import countDaysInMonth from '@/mixins/countDaysInMonth'
+import axios from 'axios'
 export default {
   mixins: [weeksData, checkDateIsToday, reformatTime],
   computed: {
-    ...mapGetters(['getNowWeek'])
+    ...mapGetters(['getNowWeek']),
+    ...mapState(['events', 'displayName'])
   },
   data() {
     return {
@@ -190,6 +205,7 @@ export default {
   },
   methods: {
     ...mapMutations(['setNowDate']),
+    ...mapActions(['GET_events', 'UPDATE_events', 'updateLoginStatus']),
     // make timeline blocks (every 30 mins)
     makeTimeline() {
       for (let i = 6; i < 24; i += 0.5) {
@@ -200,63 +216,71 @@ export default {
         this.timeline = [...this.timeline, str]
       }
     },
-    getEventsFromLs() {
-      const events = JSON.parse(localStorage.getItem('events'))
-      if (!events) return false
-      return events
+    async getEvents() {
+      await this.GET_events()
     },
     filterEventsToCurrentWeek() {
-      const filteredEvents = this.getEventsFromLs() || []
+      const filteredEvents = this.events
       const res = this.getNowWeek.map(weekDay => {
-        const inRange = { ...weekDay, events: [] }
-        filteredEvents.forEach(event => {
-          const date = new Date(event.date)
-          if (weekDay.month === date.getMonth() + 1 && weekDay.year === date.getFullYear() && weekDay.day === date.getDate()) {
-            inRange.events = [...inRange.events, event]
-          }
-        })
-        return inRange
+        if (filteredEvents.length > 0) {
+          const inRange = { ...weekDay, events: [] }
+          filteredEvents.forEach(event => {
+            const date = new Date(event.date)
+            if (weekDay.month === date.getMonth() + 1 && weekDay.year === date.getFullYear() && weekDay.day === date.getDate()) {
+              inRange.events = [...inRange.events, event]
+            }
+          })
+          return inRange
+        } else {
+          return { ...weekDay, events: [] }
+        }
       })
       return res
     },
     filterEventsToCurrentDay() {
-      const filteredEvents = this.getEventsFromLs() || []
-      const res = filteredEvents.filter(event => {
+      const filteredEvents = this.events
+      const res = filteredEvents.length > 0 ? filteredEvents.filter(event => {
         const date = new Date(event.date)
         if (date.getMonth() + 1 === this.getNowMonth && date.getFullYear() === this.getNowYear && date.getDate() === this.getNowDay) return event
-      })
-      return res || []
+      }) : []
+      return res
     },
-    handleFormSubmit() {
+    async handleFormSubmit() {
       if (this.form.content === '' || this.form.startTime === '' || this.form.endTime === '' || this.form.date === '') {
         if (this.alerts.indexOf('請填入所有欄位') === -1) this.alerts.push('請填入所有欄位')
         return false
       }
-      // const startTime = +this.form.startTime.substr(0, this.form.startTime.indexOf('a') > -1 ? this.form.startTime.indexOf('a') : this.form.startTime.indexOf('p')).split(':').join('')
-      // const endTime = +this.form.endTime.substr(0, this.form.endTime.indexOf('a') > -1 ? this.form.endTime.indexOf('a') : this.form.endTime.indexOf('p')).split(':').join('')
       const startTime = this.reformatTime(this.form.startTime)
       const endTime = this.reformatTime(this.form.endTime)
       if (startTime > endTime) {
         if (this.alerts.indexOf('開始時間不得晚於結束時間') === -1) this.alerts.push('開始時間不得晚於結束時間')
         return false
       }
-      const events = this.getEventsFromLs() || []
+      const events = this.events
       // check if block is already booked
       if (events.length) {
-        if (events.find(event => this.reformatTime(event.startTime) <= startTime || this.reformatTime(event.endTime) >= endTime || this.reformatTime(event.endTime) > startTime)) {
-          if (this.alerts.indexOf('這個時段已經有預約') === -1) this.alerts.push('這個時段已經有預約')
-        }
+        events.find(event => {
+          const formDate = new Date(this.form.date)
+          const eventDate = new Date(event.date)
+          if (formDate.getFullYear() === eventDate.getFullYear() && formDate.getMonth() === eventDate.getMonth && formDate.getDate() === eventDate.getDate()) {
+            if (this.reformatTime(event.startTime) <= startTime || this.reformatTime(event.endTime) >= endTime || this.reformatTime(event.endTime) > startTime) {
+              if (this.alerts.indexOf('這個時段已經有預約') === -1) this.alerts.push('這個時段已經有預約')
+              return false
+            }
+          }
+        })
       }
-      events.push(this.form)
-      localStorage.setItem('events', JSON.stringify(events))
+      await this.UPDATE_events(this.form)
       this.form = { content: '', startTime: '', endTime: '', date: '' }
       this.filterEventsToCurrentWeek()
     },
+    // change current day with a specific date
     selectDay(date) {
-      // if (this.$route.path.includes('week')) return false
+      if (this.$route.path.includes('week')) return false
       const { day, month, year } = date
       this.setNowDate(`${year}-${month}-${day}`)
     },
+    // change current day by -1/+1
     adjustDay(val) {
       if ((this.getNowDay === this.countDaysInMonth(this.getNowYear, this.getNowMonth) && val === 1) || (this.getNowDay === 1 && val === -1)) {
         if (val === 1) {
@@ -276,6 +300,7 @@ export default {
         this.setNowDate(`${this.getNowYear}-${this.getNowMonth}-${this.getNowDay + val}`)
       }
     },
+    // count total days in a specific month
     countDaysInMonth(year, month) {
       return /3|5|8|10/.test(month - 1)
         ? 30
@@ -284,12 +309,19 @@ export default {
             ? 29
             : 28
           : 31
+    },
+    handleLogout() {
+      const accessToken = localStorage.getItem('token')
+      axios.post(`${process.env.VUE_APP_API_URL}/users/revoke`, { accessToken })
+        .then(() => {
+          this.updateLoginStatus({ status: false, accessToken: '', userId: null, displayName: null })
+          this.$router.push({ name: 'Home' })
+        })
     }
   },
   created() {
     this.makeTimeline()
-    // localStorage.setItem('events', JSON.stringify([{ date: new Date(), startTime: '08:00', endTime: '12:00', content: 'hello world' }]))
-    this.filterEventsToCurrentWeek()
+    this.getEvents()
   },
   beforeDestroy() {
     // force calender to render current month at top

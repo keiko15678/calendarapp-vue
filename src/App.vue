@@ -4,9 +4,7 @@
   </div>
 </template>
 <script>
-// import countDaysInMonth from '@/mixins/countDaysInMonth'
 export default {
-  // mixins: [countDaysInMonth],
   methods: {
     // find which day of week does the month start at
     zellerCongruence(year, month, day) {

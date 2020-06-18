@@ -1,12 +1,18 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import axios from 'axios'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+  strict: process.env.NODE_ENV !== 'production',
   state: {
     now: new Date(),
-    dates: []
+    dates: [],
+    isLoggedIn: false,
+    displayName: null,
+    userId: null,
+    events: []
   },
   getters: {
     getNowYear(state) {
@@ -49,8 +55,45 @@ export default new Vuex.Store({
     },
     setDates(state, payload) {
       state.dates = payload
+    },
+    setLogin(state, payload) {
+      state.isLoggedIn = payload
+    },
+    setDisplayName(state, payload) {
+      state.displayName = payload
+    },
+    setUserId(state, payload) {
+      state.userId = payload
+    },
+    setEvents(state, payload) {
+      state.events = payload
     }
   },
-  actions: {},
+  actions: {
+    updateLoginStatus({ commit }, payload) {
+      const { status, displayName, accessToken, userId } = payload
+      localStorage.setItem('token', accessToken)
+      localStorage.setItem('userId', userId)
+      commit('setLogin', status)
+      commit('setDisplayName', displayName || null)
+      commit('setUserId', userId || null)
+    },
+    GET_events({ commit, state }) {
+      return axios
+        .get(`${process.env.VUE_APP_API_URL}/events/${state.userId}`)
+        .then(res => {
+          commit('setEvents', res.data.events)
+        })
+    },
+    UPDATE_events({ commit, state }, payload) {
+      return axios
+        .post(`${process.env.VUE_APP_API_URL}/events/${state.userId}`, {
+          event: payload
+        })
+        .then(res => {
+          commit('setEvents', [...state.events, payload])
+        })
+    }
+  },
   modules: {}
 })
