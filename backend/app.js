@@ -32,7 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // cors
 app.use(function(req, res, next) {
-  res.header({ 'Access-Control-Allow-Origin': env.F2E_URL })
+  res.header({ 'Access-Control-Allow-Origin': env.CORS_URL })
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept'
